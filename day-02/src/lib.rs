@@ -1,9 +1,4 @@
-pub fn process_part1(input: &str) -> String {
-    todo!();
-}
-pub fn puzzle(file_contents: &str) {
-    let stragey_guide = file_contents;
-
+pub fn part1(input: &str) -> i32 {
     // first column what elf will play
     // second column what I _should_ play
 
@@ -19,7 +14,7 @@ pub fn puzzle(file_contents: &str) {
     // draw -> 3
     // lose -> 0
 
-    let total_points: i32 = stragey_guide
+    let total_points: i32 = input
         .split("\n")
         .filter(|s| !s.is_empty())
         .map(|s| {
@@ -40,8 +35,11 @@ pub fn puzzle(file_contents: &str) {
         .sum();
 
     println!("You would get a total of {total_points} points");
+    return total_points;
+}
 
-    let new_points: i32 = stragey_guide
+pub fn part2(input: &str) -> i32 {
+    let new_points: i32 = input
         .split("\n")
         .filter(|s| !s.is_empty())
         .map(|s| {
@@ -57,7 +55,9 @@ pub fn puzzle(file_contents: &str) {
         })
         .sum();
 
-    println!("But with the new strategy you would get total {new_points} points")
+    println!("But with the new strategy you would get total {new_points} points");
+
+    return new_points;
 }
 
 fn elf_code_to_tool(elf_code: &str) -> RPSTool {
@@ -148,18 +148,27 @@ impl Game<'_> for RPSTool {
                     Tool::Scissor => elf_code_to_tool("C").point, // scissor
                 }
             }
-            _ => panic!("Shouldn't get here!"),
         }
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn it_works() {
-//         let result = add(2, 2);
-//         assert_eq!(result, 4);
-//     }
-// }
+    const INPUT: &str = "A Y
+B X
+C Z";
+
+    #[test]
+    fn test_part01() {
+        let result = part1(INPUT);
+        assert_eq!(result, 15);
+    }
+
+    #[test]
+    fn test_part02() {
+        let result = part2(INPUT);
+        assert_eq!(result, 12);
+    }
+}
