@@ -1,30 +1,30 @@
-pub fn process_part1(input: &str) -> String {
-    todo!()
-}
-
 use std::cmp::Reverse;
 
-// Calorie Counting
-pub fn puzzle(file_contents: &str) {
-    let mut richest_elf: &Elf;
+pub fn part1(input: &str) -> String {
+    let mut richest_elf = &Elf { foods: vec![0] };
 
-    let mut elves = create_elf_colony(file_contents);
+    let elves = create_elf_colony(input);
 
     let mut max_cal = 0;
-    for (i, elf) in elves.iter().enumerate() {
+    for (_, elf) in elves.iter().enumerate() {
         let calories = elf.foods.iter().sum();
         if calories > max_cal {
             max_cal = calories;
             richest_elf = elf;
-            println!(
-                "{:?} {:?} has the most calories with {:?}",
-                i + 1,
-                richest_elf,
-                max_cal
-            );
+            // println!(
+            //     "{:?} {:?} has the most calories with {:?}",
+            //     i + 1,
+            //     richest_elf,
+            //     max_cal
+            // );
         }
     }
 
+    return richest_elf.foods.iter().sum::<i32>().to_string();
+}
+
+pub fn part2(input: &str) -> String {
+    let mut elves = create_elf_colony(input);
     elves.sort_by_cached_key(|e| Reverse(e.foods.iter().sum::<i32>()));
 
     // println!("{:?}", &elves[0..3]); // top 3
@@ -35,6 +35,8 @@ pub fn puzzle(file_contents: &str) {
         .sum();
 
     println!("Top three elves have total of {:?} calories", top_3_cal_sum);
+
+    return top_3_cal_sum.to_string();
 }
 
 fn create_elf_colony(file_contents: &str) -> Vec<Elf> {
@@ -66,24 +68,30 @@ struct Elf {
 mod tests {
     use super::*;
 
-    #[test]
-    fn it_works() {
-        let input = "1000
-        2000
-        3000
-        
-        4000
-        
-        5000
-        6000
-        
-        7000
-        8000
-        9000
-        
-        10000";
+    const INPUT: &str = "1000
+2000
+3000
 
-        let result = process_part1(input);
-        assert_eq!(result, 24000);
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000";
+
+    #[test]
+    fn test_part01() {
+        let result = part1(INPUT);
+        assert_eq!(result, "24000");
+    }
+
+    #[test]
+    fn test_part02() {
+        let result2 = part2(INPUT);
+        assert_eq!(result2, "45000")
     }
 }
