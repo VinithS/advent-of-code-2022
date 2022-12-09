@@ -102,7 +102,6 @@ trait Game<'a> {
 
 impl Game<'_> for RPSTool {
     fn against(&self, tool: &RPSTool) -> i32 {
-        // take the full slice of the String to get a &'static str
         match tool.tool {
             Tool::Rock => match self.tool {
                 Tool::Rock => 3,

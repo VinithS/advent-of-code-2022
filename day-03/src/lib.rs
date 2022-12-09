@@ -24,8 +24,29 @@ pub fn puzzle1(input: &str) -> i32 {
     return total_prio_sum;
 }
 
-pub fn puzzle2(input: &str) -> String {
-    return "4".to_owned();
+pub fn puzzle2(input: &str) -> i32 {
+    let mut rucksacks = input.lines();
+
+    let mut points = 0;
+
+    while let Some(line) = rucksacks.next() {
+        let second_line = rucksacks.next().unwrap();
+        let third_line = rucksacks.next().unwrap();
+
+        let firsts: HashSet<char> = line[0..line.len()].chars().collect();
+        let seconds: HashSet<char> = second_line[0..second_line.len()].chars().collect();
+        let thirds: HashSet<char> = third_line[0..third_line.len()].chars().collect();
+
+        let common_one_two: HashSet<char> = firsts
+            .intersection(&seconds)
+            .map(|c| c.to_owned())
+            .collect();
+
+        let common_all_three: HashSet<&char> = common_one_two.intersection(&thirds).collect();
+
+        points += chars_to_prio_sum(common_all_three);
+    }
+    return points;
 }
 
 fn chars_to_prio_sum(char_set: HashSet<&char>) -> i32 {
@@ -71,6 +92,6 @@ CrZsJsPPZsGzwwsLwLmpwMDw";
     #[test]
     fn test_puzzle2() {
         let result = puzzle2(INPUT);
-        assert_eq!(result, "4");
+        assert_eq!(result, 70);
     }
 }
