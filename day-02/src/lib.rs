@@ -1,3 +1,6 @@
+pub fn process_part1(input: &str) -> String {
+    todo!();
+}
 pub fn puzzle(file_contents: &str) {
     let stragey_guide = file_contents;
 
@@ -149,3 +152,14 @@ impl Game<'_> for RPSTool {
         }
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+
+//     #[test]
+//     fn it_works() {
+//         let result = add(2, 2);
+//         assert_eq!(result, 4);
+//     }
+// }

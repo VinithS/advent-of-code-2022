@@ -1,3 +1,7 @@
+pub fn process_part1(input: &str) -> String {
+    todo!()
+}
+
 use std::cmp::Reverse;
 
 // Calorie Counting
@@ -56,4 +60,30 @@ fn convert_to_int_list(slice: &str) -> Vec<i32> {
 #[derive(Debug, Hash, Eq, PartialEq)] // lets us print using {:?}
 struct Elf {
     foods: Vec<i32>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let input = "1000
+        2000
+        3000
+        
+        4000
+        
+        5000
+        6000
+        
+        7000
+        8000
+        9000
+        
+        10000";
+
+        let result = process_part1(input);
+        assert_eq!(result, 24000);
+    }
 }
