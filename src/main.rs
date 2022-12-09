@@ -1,3 +1,16 @@
+// use std::env;
+use std::fs;
+
+mod dayone;
+mod daytwo;
+
 fn main() {
-    println!("Hello, world!");
+    // let args: Vec<String> = env::args().collect();
+
+    let filepath = "./lib/day-1.txt";
+
+    let contents = fs::read_to_string(filepath).expect("Input file missing.");
+
+    // dayone::puzzle(&contents);
+    dayone::puzzle(&contents);
 }
