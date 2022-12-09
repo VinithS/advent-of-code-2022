@@ -1,4 +1,4 @@
-pub fn part1(input: &str) -> i32 {
+pub fn puzzle1(input: &str) -> i32 {
     // first column what elf will play
     // second column what I _should_ play
 
@@ -38,7 +38,7 @@ pub fn part1(input: &str) -> i32 {
     return total_points;
 }
 
-pub fn part2(input: &str) -> i32 {
+pub fn puzzle2(input: &str) -> i32 {
     let new_points: i32 = input
         .split("\n")
         .filter(|s| !s.is_empty())
@@ -161,14 +161,14 @@ B X
 C Z";
 
     #[test]
-    fn test_part01() {
-        let result = part1(INPUT);
+    fn test_puzzle1() {
+        let result = puzzle1(INPUT);
         assert_eq!(result, 15);
     }
 
     #[test]
-    fn test_part02() {
-        let result = part2(INPUT);
+    fn test_puzzle2() {
+        let result = puzzle2(INPUT);
         assert_eq!(result, 12);
     }
 }

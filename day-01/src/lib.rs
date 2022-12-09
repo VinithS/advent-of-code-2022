@@ -1,6 +1,6 @@
 use std::cmp::Reverse;
 
-pub fn part1(input: &str) -> String {
+pub fn puzzle1(input: &str) -> String {
     let mut richest_elf = &Elf { foods: vec![0] };
 
     let elves = create_elf_colony(input);
@@ -23,7 +23,7 @@ pub fn part1(input: &str) -> String {
     return richest_elf.foods.iter().sum::<i32>().to_string();
 }
 
-pub fn part2(input: &str) -> String {
+pub fn puzzle2(input: &str) -> String {
     let mut elves = create_elf_colony(input);
     elves.sort_by_cached_key(|e| Reverse(e.foods.iter().sum::<i32>()));
 
@@ -84,14 +84,14 @@ mod tests {
 10000";
 
     #[test]
-    fn test_part01() {
-        let result = part1(INPUT);
+    fn test_puzzle1() {
+        let result = puzzle1(INPUT);
         assert_eq!(result, "24000");
     }
 
     #[test]
-    fn test_part02() {
-        let result2 = part2(INPUT);
+    fn test_puzzle2() {
+        let result2 = puzzle2(INPUT);
         assert_eq!(result2, "45000")
     }
 }
