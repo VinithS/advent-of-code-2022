@@ -94,7 +94,7 @@ fn create_board(board_input: &str) -> Vec<Vec<String>> {
         // dbg!(&row, &pieces, &board);
         for (idx, piece) in pieces.enumerate() {
             if piece == "" {
-                idx_err += 1; // [A] --- [B] -- split(" ") --> [[A],"","", "",[B]] <- three chars
+                idx_err += 1; // [A] --- [B] -- split(" ") --> [[A],"","","","",[B]] <- four chars
                 continue;
             } else {
                 // if piece is the base number, skip it.
@@ -102,7 +102,7 @@ fn create_board(board_input: &str) -> Vec<Vec<String>> {
                     continue;
                 }
 
-                // iterator index - empty count + 1 empty  for every four spaces missed
+                // iterator index - empty count + 1 empty for every four spaces missed
                 let true_idx = idx as i32 - idx_err + idx_err / 4;
                 // dbg!(&idx, &idx_err, &true_idx, &piece);
 
