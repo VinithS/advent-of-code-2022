@@ -1,12 +1,9 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Dir<'a>(pub &'a str);
 
-#[derive(Debug)]
-pub struct File<'a>(pub &'a str, pub u32);
-
 // either or
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Resources<'a> {
-    File(File<'a>),
+    File(&'a str, u32),
     Dir(&'a str),
 }

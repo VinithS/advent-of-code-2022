@@ -8,10 +8,11 @@ use parser::shell_parser;
 pub fn puzzle1(input: &str) -> usize {
     // const SIZE_LIMIT: i32 = 100000;
 
+    dir_helper(input);
     return 0;
 }
 
-pub fn puzzle2(input: &str) -> usize {
+pub fn puzzle2(_input: &str) -> usize {
     return 0;
 }
 
@@ -20,11 +21,6 @@ fn dir_helper(input: &str) {
 
     dbg!(input);
     dbg!(commands);
-}
-
-fn parse_two(shell_line: &str) -> (&str, &str) {
-    let cmd: Vec<&str> = shell_line.split(" ").collect();
-    return (cmd.get(1).unwrap(), cmd.get(2).unwrap());
 }
 
 #[cfg(test)]
@@ -54,7 +50,6 @@ $ ls
 8033020 d.log
 5626152 d.ext
 7214296 k";
-
     #[test]
     fn test_puzzle1() {
         let result = puzzle1(INPUT);
@@ -64,7 +59,7 @@ $ ls
     #[test]
     #[ignore]
     fn test_puzzle2() {
-        let result = puzzle2(INPUT);
+        let _ = puzzle2(INPUT);
         // assert_eq!(result, "");
     }
 }
