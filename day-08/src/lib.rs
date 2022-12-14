@@ -1,22 +1,21 @@
 mod forest;
 
-use forest::create_view_score_tracker;
+use forest::create_stat_tracker;
 
-use crate::forest::{create_forest, create_height_tracker};
+use crate::forest::create_forest;
 
 pub fn puzzle1(input: &str) -> usize {
     let forest = create_forest(input);
-    let tracker = create_height_tracker(&forest);
+    let tracker = create_stat_tracker(&forest);
 
-    tracker.iter().flatten().filter(|b| **b).count()
+    tracker.iter().flatten().filter(|b| (**b).0).count()
 }
 
-// multi crate crane
 pub fn puzzle2(input: &str) -> usize {
     let forest = create_forest(input);
-    let tracker = create_view_score_tracker(&forest);
+    let tracker = create_stat_tracker(&forest);
 
-    *tracker.iter().flatten().max().unwrap()
+    tracker.iter().flatten().map(|b| b.1).max().unwrap()
 }
 
 #[cfg(test)]
