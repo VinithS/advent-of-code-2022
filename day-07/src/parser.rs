@@ -29,7 +29,7 @@ pub fn shell_parser(input: &str) -> IResult<&str, Vec<Cmd>> {
     Ok((input, cmd))
 }
 
-// --- individual parsers below
+// --- individual parsers
 fn cd_p(input: &str) -> IResult<&str, Cmd> {
     let (input, _) = tag("$ cd ")(input)?;
     let (input, dir) = alt((tag(".."), tag("/"), alpha1))(input)?;

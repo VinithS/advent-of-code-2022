@@ -3,7 +3,7 @@ use std::fs;
 
 /// --- Day 7: No Space Left On Device ---
 /// 1. What is the sum of the total sizes of those directories?
-/// 2.
+/// 2. What is the total size of that directory to delete so we have enough free space?
 fn main() {
     let file = fs::read_to_string("./input.txt").unwrap();
     println!("Puzzle 1: {}", puzzle1(&file));
