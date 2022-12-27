@@ -14,7 +14,7 @@ pub fn puzzle1(input: &str) -> usize {
 
     // dbg!(&mvs);
 
-    let mut rope: Rope = Rope::new();
+    let mut rope: Rope = Rope::new(2);
 
     mvs.iter().for_each(|mv| {
         rope.move_head_n(mv.0, mv.1);
@@ -22,12 +22,24 @@ pub fn puzzle1(input: &str) -> usize {
     });
 
     // dbg!(&rope.visited);
-    return rope.visited.len();
+    return rope.vis.len();
 }
 
 // multi crate crane
 pub fn puzzle2(input: &str) -> usize {
-    return 0;
+    let (_, mvs) = cmd_parser(input).unwrap();
+
+    dbg!(&mvs);
+
+    let mut rope: Rope = Rope::new(10); // 10 knots
+
+    mvs.iter().for_each(|mv| {
+        rope.move_head_n(mv.0, mv.1);
+        // dbg!(&rope);
+    });
+
+    // dbg!(&rope.visited);
+    return rope.vis.len();
 }
 
 fn cmd_parser(input: &str) -> IResult<&str, Vec<(Movement, u32)>> {
