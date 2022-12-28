@@ -1,3 +1,8 @@
+mod position;
+mod rope;
+
+use crate::position::Movement;
+use crate::rope::Rope;
 use nom::{
     character::complete::u32,
     character::complete::{alpha1, newline, space0},
@@ -5,40 +10,26 @@ use nom::{
     sequence::separated_pair,
     IResult,
 };
-use rope::{Movement, Rope};
 
-mod rope;
-
+// dual knot rope
 pub fn puzzle1(input: &str) -> usize {
     let (_, mvs) = cmd_parser(input).unwrap();
-
-    // dbg!(&mvs);
-
     let mut rope: Rope = Rope::new(2);
 
     mvs.iter().for_each(|mv| {
         rope.move_head_n(mv.0, mv.1);
-        // dbg!(&rope);
     });
-
-    // dbg!(&rope.visited);
     return rope.vis.len();
 }
 
-// multi crate crane
+// multi knot rope
 pub fn puzzle2(input: &str) -> usize {
     let (_, mvs) = cmd_parser(input).unwrap();
-
-    dbg!(&mvs);
-
     let mut rope: Rope = Rope::new(10); // 10 knots
 
     mvs.iter().for_each(|mv| {
         rope.move_head_n(mv.0, mv.1);
-        // dbg!(&rope);
     });
-
-    // dbg!(&rope.visited);
     return rope.vis.len();
 }
 

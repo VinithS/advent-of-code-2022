@@ -1,50 +1,11 @@
-use std::{cmp, collections::HashSet};
+use std::collections::HashSet;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Pos(i32, i32);
-
-#[derive(Debug, Clone, Copy)]
-pub enum Movement {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-impl Movement {
-    fn inverse(&self) -> &Movement {
-        match self {
-            Movement::Down => &Movement::Up,
-            Movement::Up => &Movement::Down,
-            Movement::Right => &Movement::Left,
-            Movement::Left => &Movement::Right,
-        }
-    }
-}
-
-impl Pos {
-    fn apply_move(&mut self, m: &Movement) {
-        match m {
-            Movement::Up => {
-                self.1 += 1;
-            }
-            Movement::Down => {
-                self.1 -= 1;
-            }
-            Movement::Left => {
-                self.0 -= 1;
-            }
-            Movement::Right => {
-                self.0 += 1;
-            }
-        }
-    }
-}
+use crate::position::{Movement, Pos};
 
 #[derive(Debug, Clone)]
 pub struct Rope {
     knots: Vec<Pos>,
-    pub vis: HashSet<Pos>, // tail visisted
+    pub vis: HashSet<Pos>,
 }
 
 impl Rope {
@@ -62,6 +23,8 @@ impl Rope {
     }
 
     pub fn move_head(&mut self, m: Movement) {
+        // println!("Moving head {:?}", &m);
+
         self.knots.get_mut(0).unwrap().apply_move(&m); // mutate head first
 
         for i in 0..self.knots.len() - 1 {
@@ -69,88 +32,38 @@ impl Rope {
             let t: &mut Pos = self.knots.get_mut(i + 1).unwrap(); // get mutable tail ref
 
             // if tail doesn't move, we don't need to continue with the iteration
-            if !Self::adj_tail(h, t, &m) {
-                println!("Tail doesn't move head at {:?}", &h);
+            if !Self::adj_tail(h, t) {
+                // println!("Tail doesn't move head at {:?}", &h);
                 break;
             }
-
-            dbg!(&h, &t);
         }
-
-        dbg!(&self.knots);
-
         self.vis.insert(self.knots.last().unwrap().clone());
     }
 
-    fn adj_tail(h: Pos, t: &mut Pos, m: &Movement) -> bool {
-        println!("checking head:{:?} againt tail:{:?}", &h, &t);
-
-        let dx = h.0 - t.0;
-        let dy = h.1 - t.1;
-
-        dbg!(dx, dy);
-
-        let dist = cmp::max(dx.abs(), dy.abs());
+    fn adj_tail(h: Pos, t: &mut Pos) -> bool {
+        // println!("checking head:{:?} againt tail:{:?}", &h, &t);
+        let (head_dir, dist) = t.get_dir_and_dist(&h);
 
         // dbg!(&h, &t, dist);
         if dist >= 2 {
-            let new_mvmnt: &Movement = if dx > dy {
-                match m {
-                    Movement::Up | Movement::Right => m.inverse(),
-                    _ => {
-                        return false;
-                    }
-                }
-            } else if dx < 0 && dy > 0 {
-                // top left
-                match m {
-                    Movement::Up | Movement::Left => m.inverse(),
-                    _ => {
-                        return false;
-                    }
-                }
-            } else if dx < 0 && dy < 0 {
-                // bot left
-                match m {
-                    Movement::Down | Movement::Left => m.inverse(),
-                    _ => {
-                        return false;
-                    }
-                }
-            } else if dx > 0 && dy < 0 {
-                // bot right
-                match m {
-                    Movement::Down | Movement::Right => m.inverse(),
-                    _ => {
-                        return false;
-                    }
-                }
-            } else {
-                m.inverse()
-            };
-
-            // is there a better way to do this
             t.0 = h.0;
             t.1 = h.1;
-
-            println!("Moved tail to {:?}, applying {:?}", &t, &new_mvmnt);
-            t.apply_move(&new_mvmnt);
-
+            // println!("Moved tail to {:?}, applying {:?}", &t, head_dir.inverse());
+            t.apply_move(head_dir.inverse());
             return true;
         }
-
         // tail doesn't move.
         return false;
-    }
-
-    fn get_last(&self) -> &Pos {
-        &self.knots.last().unwrap()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn get_last(r: &Rope) -> &Pos {
+        r.knots.last().unwrap()
+    }
 
     #[test]
     fn test_basic_movements() {
@@ -160,19 +73,19 @@ mod tests {
         };
 
         rope.move_head(Movement::Up);
-        assert_eq!(rope.get_last(), &Pos(0, 0));
+        assert_eq!(get_last(&rope), &Pos(0, 0));
 
         rope.move_head(Movement::Up);
-        assert_eq!(rope.get_last(), &Pos(0, 1));
+        assert_eq!(get_last(&rope), &Pos(0, 1));
 
         rope.move_head(Movement::Up);
-        assert_eq!(rope.get_last(), &Pos(0, 2));
+        assert_eq!(get_last(&rope), &Pos(0, 2));
 
         rope.move_head(Movement::Down); // head is now overlapping with tail
-        assert_eq!(rope.get_last(), &Pos(0, 2));
+        assert_eq!(get_last(&rope), &Pos(0, 2));
 
         rope.move_head(Movement::Down);
-        assert_eq!(rope.get_last(), &Pos(0, 2));
+        assert_eq!(get_last(&rope), &Pos(0, 2));
     }
 
     #[test]
@@ -183,17 +96,17 @@ mod tests {
         };
 
         rope.move_head(Movement::Up);
-        assert_eq!(rope.get_last(), &Pos(0, 0));
+        assert_eq!(get_last(&rope), &Pos(0, 0));
         rope.move_head(Movement::Right);
-        assert_eq!(rope.get_last(), &Pos(0, 0));
+        assert_eq!(get_last(&rope), &Pos(0, 0));
 
         rope.move_head(Movement::Up);
-        assert_eq!(rope.get_last(), &Pos(1, 1));
+        assert_eq!(get_last(&rope), &Pos(1, 1));
 
         rope.move_head(Movement::Right); // is now diagonal
-        assert_eq!(rope.get_last(), &Pos(1, 1));
+        assert_eq!(get_last(&rope), &Pos(1, 1));
         rope.move_head(Movement::Right);
-        assert_eq!(rope.get_last(), &Pos(2, 2));
+        assert_eq!(get_last(&rope), &Pos(2, 2));
     }
 
     #[test]
@@ -204,15 +117,15 @@ mod tests {
         };
 
         rope.move_head_n(Movement::Right, 3);
-        assert_eq!(rope.get_last(), &Pos(2, 0));
+        assert_eq!(get_last(&rope), &Pos(2, 0));
         rope.move_head_n(Movement::Up, 3);
-        assert_eq!(rope.get_last(), &Pos(3, 2));
+        assert_eq!(get_last(&rope), &Pos(3, 2));
 
         rope.move_head(Movement::Left);
-        assert_eq!(rope.get_last(), &Pos(3, 2));
+        assert_eq!(get_last(&rope), &Pos(3, 2));
 
         rope.move_head(Movement::Left); // this is the absolute value test case
-        assert_eq!(rope.get_last(), &Pos(2, 3));
+        assert_eq!(get_last(&rope), &Pos(2, 3));
     }
 
     #[test]
@@ -222,16 +135,16 @@ mod tests {
             vis: HashSet::new(),
         };
 
-        rope.move_head_n(Movement::Right, 3);
-        assert_eq!(rope.get_last(), &Pos(1, 0));
+        rope.move_head_n(Movement::Right, 2);
+        assert_eq!(get_last(&rope), &Pos(0, 0));
         rope.move_head_n(Movement::Up, 3);
-        assert_eq!(rope.get_last(), &Pos(3, 2));
+        assert_eq!(get_last(&rope), &Pos(1, 1));
 
         rope.move_head(Movement::Left);
-        assert_eq!(rope.get_last(), &Pos(3, 2));
+        assert_eq!(get_last(&rope), &Pos(1, 1));
 
         rope.move_head(Movement::Left); // this is the absolute value test case
-        assert_eq!(rope.get_last(), &Pos(2, 3));
+        assert_eq!(get_last(&rope), &Pos(1, 2));
     }
 
     #[test]
@@ -241,8 +154,8 @@ mod tests {
             vis: HashSet::new(),
         };
 
-        // Right 5
-        rope.move_head_n(Movement::Right, 5);
+        // Right 4
+        rope.move_head_n(Movement::Right, 4);
 
         // ......
         // ......
