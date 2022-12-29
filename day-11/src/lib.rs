@@ -1,59 +1,55 @@
+use parser::colony_parser;
+
 mod monkey;
+mod operation;
 mod parser;
 
-pub fn puzzle1(input: &str) -> String {
-    let x = |a: i32, b: i32| a + b;
+pub fn puzzle1(input: &str) -> u64 {
+    let (_, mut col) = colony_parser(input).unwrap();
+    let m = col.get_meditation_number();
 
-    for round in 0..20 {}
-    return "".to_string();
+    for _ in 0..20 {
+        for turn in 0..col.monkies.len() {
+            col.play_turn(turn, true, m); // don't care
+        }
+    }
+    return col
+        .get_top_n_inspections(2)
+        .iter()
+        .fold(1, |acc: u64, i: &u64| acc * i);
 }
 
-// multi crate crane
-pub fn puzzle2(input: &str) -> String {
-    return "".to_string();
+pub fn puzzle2(input: &str) -> u64 {
+    let (_, mut col) = colony_parser(input).unwrap();
+    let m = col.get_meditation_number();
+
+    for _ in 0..10_000 {
+        for turn in 0..col.monkies.len() {
+            col.play_turn(turn, false, m); // we care X_X
+        }
+    }
+
+    return col
+        .get_top_n_inspections(2)
+        .iter()
+        .fold(1, |acc: u64, i: &u64| acc * i);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const INPUT: &str = "Monkey 0:
-Starting items: 79, 98
-Operation: new = old * 19
-Test: divisible by 23
-  If true: throw to monkey 2
-  If false: throw to monkey 3
-
-Monkey 1:
-Starting items: 54, 65, 75, 74
-Operation: new = old + 6
-Test: divisible by 19
-  If true: throw to monkey 2
-  If false: throw to monkey 0
-
-Monkey 2:
-Starting items: 79, 60, 97
-Operation: new = old * old
-Test: divisible by 13
-  If true: throw to monkey 1
-  If false: throw to monkey 3
-
-Monkey 3:
-Starting items: 74
-Operation: new = old + 3
-Test: divisible by 17
-  If true: throw to monkey 0
-  If false: throw to monkey 1";
+    const INPUT: &str = include_str!("../test.txt");
 
     #[test]
     fn test_puzzle1() {
         let result = puzzle1(INPUT);
-        assert_eq!(result, "");
+        assert_eq!(result, 10605);
     }
 
     #[test]
     fn test_puzzle2() {
         let result = puzzle2(INPUT);
-        assert_eq!(result, "");
+        assert_eq!(result, 2713310158);
     }
 }

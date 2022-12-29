@@ -1,80 +1,74 @@
-use std::ops::Add;
-
-use either::{self, Either};
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_while},
-    character::{
-        complete::{alphanumeric1, space0},
-        is_alphanumeric,
-    },
-    multi::separated_list0,
-    number::complete::i32,
-    sequence::tuple,
+    bytes::complete::tag,
+    character::complete::{alphanumeric1, multispace1, u64},
+    multi::separated_list1,
+    sequence::{delimited, preceded, tuple},
     IResult,
 };
 
-use crate::monkey::{Monkey, Test};
+use crate::{
+    monkey::{Colony, Monkey, Test},
+    operation::{OpVal, Operation},
+};
 
-#[derive(Debug, PartialEq)]
-enum OpVal {
-    Itself,
-    Val(i32),
+pub fn colony_parser(input: &str) -> IResult<&str, Colony> {
+    let (input, monkies) = separated_list1(tag("\n\n"), monkey_parser)(input)?;
+
+    Ok((input, Colony { monkies }))
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Operation {
-    Add(OpVal),
-    Mult(OpVal),
+fn monkey_parser(input: &str) -> IResult<&str, Monkey> {
+    let (input, _id) = delimited(tag("Monkey "), u64, tag(":"))(input)?;
+    let (input, _) = multispace1(input)?;
+
+    let (input, items) = item_parser(input)?;
+    let (input, _) = multispace1(input)?;
+
+    let (input, op) = op_parser(input)?;
+    let (input, _) = multispace1(input)?;
+
+    let (input, test) = test_parser(input)?;
+
+    Ok((
+        input,
+        Monkey {
+            items,
+            op,
+            test,
+            inspected: 0,
+        },
+    ))
 }
 
-impl Operation {
-    pub fn calculate_worry(&self, a: i32) -> i32 {
-        let raw_worry = match self {
-            Operation::Add(OpVal::Itself) => a + a,
-            Operation::Add(OpVal::Val(n)) => a + n,
-            Operation::Mult(OpVal::Itself) => a * a,
-            Operation::Mult(OpVal::Val(n)) => a * n,
-        };
-
-        return raw_worry / 3; // potential source of bugs
-    }
-}
-
-fn input_parser(input: &str) -> IResult<&str, &str> {
-    let (input, x) = separated_list0(tag("\n\n"), tag("Monkey: "))(input)?;
-
-    dbg!(input, x);
-
-    Ok(("", ""))
-}
-
-fn monkey_parser(input: &str) -> IResult<&str, Vec<Monkey>> {
-    todo!()
-}
-
-fn item_parser(input: &str) -> IResult<&str, Vec<i32>> {
-    let (input, _) = tag("Starting items: ")(input)?;
-    // let (input, vals) = separated_list0(tag(","), i32);
-
-    // Ok((input, vals))
-    todo!()
+fn item_parser(input: &str) -> IResult<&str, Vec<u64>> {
+    preceded(tag("Starting items: "), separated_list1(tag(", "), u64))(input)
 }
 
 fn test_parser(input: &str) -> IResult<&str, Test> {
-    let (input, _) = tag("Test: divisible by ")(input)?;
-    todo!()
+    let (input, div) = preceded(tag("Test: divisible by "), u64)(input)?;
+    let (input, _) = multispace1(input)?;
+
+    let (input, pass_condition) = preceded(tag("If true: throw to monkey "), u64)(input)?;
+    let (input, _) = multispace1(input)?;
+    let (input, fail_condition) = preceded(tag("If false: throw to monkey "), u64)(input)?;
+
+    Ok((
+        input,
+        Test {
+            // div: div / 10,
+            div,
+            pass_condition: pass_condition as usize,
+            fail_condition: fail_condition as usize,
+        },
+    ))
 }
 
 fn op_parser(input: &str) -> IResult<&str, Operation> {
     let (input, _) = tag("Operation: new = old ")(input)?;
+    let (input, op) = tuple((alt((tag("+"), tag("*"))), multispace1, alphanumeric1))(input)?;
 
-    // Operation: new = old <OP> <Num/Old>
-    // in the format of x = y op z
-
-    let (input, op) = tuple((alt((tag("+"), tag("*"))), space0, alphanumeric1))(input)?;
-
-    let opval = match i32::from_str_radix(op.1, 10) {
+    let opval = match u64::from_str_radix(op.2, 10) {
         Ok(v) => OpVal::Val(v),
         Err(_) => OpVal::Itself,
     };
@@ -87,17 +81,77 @@ fn op_parser(input: &str) -> IResult<&str, Operation> {
         }
     };
 
-    dbg!(i32::from_str_radix(op.1, 10).unwrap(), input, op, &m_op);
-
     Ok((input, m_op))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::vec;
+
+    const INPUT: &str = include_str!("../test.txt");
+
+    // Monkey { items, op, test })
+    #[test]
+    fn test_full_parsing() {
+        assert_eq!(
+            colony_parser(INPUT),
+            Ok((
+                "",
+                Colony {
+                    monkies: vec![
+                        Monkey {
+                            items: vec![79, 98],
+                            op: Operation::Mult(OpVal::Val(19)),
+                            test: Test {
+                                div: 23,
+                                pass_condition: 2,
+                                fail_condition: 3,
+                            },
+                            inspected: 0,
+                        },
+                        Monkey {
+                            items: vec![54, 65, 75, 74],
+                            op: Operation::Add(OpVal::Val(6)),
+                            test: Test {
+                                div: 19,
+                                pass_condition: 2,
+                                fail_condition: 0,
+                            },
+                            inspected: 0,
+                        },
+                        Monkey {
+                            items: vec![79, 60, 97],
+                            op: Operation::Mult(OpVal::Itself),
+                            test: Test {
+                                div: 13,
+                                pass_condition: 1,
+                                fail_condition: 3,
+                            },
+                            inspected: 0,
+                        },
+                        Monkey {
+                            items: vec![74],
+                            op: Operation::Add(OpVal::Val(3)),
+                            test: Test {
+                                div: 17,
+                                pass_condition: 0,
+                                fail_condition: 1,
+                            },
+                            inspected: 0,
+                        },
+                    ]
+                }
+            ))
+        );
+    }
 
     #[test]
     fn test_op_parser() {
+        assert_eq!(
+            op_parser("Operation: new = old + 06"),
+            Ok(("", Operation::Add(OpVal::Val(6))))
+        );
         assert_eq!(
             op_parser("Operation: new = old + 6"),
             Ok(("", Operation::Add(OpVal::Val(6))))
@@ -115,37 +169,4 @@ mod tests {
             Ok(("", Operation::Mult(OpVal::Itself)))
         );
     }
-    #[test]
-    fn test_parser() {
-        let result = input_parser(INPUT);
-        // assert_eq!(result, "");
-    }
-
-    const INPUT: &str = "Monkey 0:
-Starting items: 79, 98
-Operation: new = old * 19
-Test: divisible by 23
-  If true: throw to monkey 2
-  If false: throw to monkey 3
-
-Monkey 1:
-Starting items: 54, 65, 75, 74
-Operation: new = old + 6
-Test: divisible by 19
-  If true: throw to monkey 2
-  If false: throw to monkey 0
-
-Monkey 2:
-Starting items: 79, 60, 97
-Operation: new = old * old
-Test: divisible by 13
-  If true: throw to monkey 1
-  If false: throw to monkey 3
-
-Monkey 3:
-Starting items: 74
-Operation: new = old + 3
-Test: divisible by 17
-  If true: throw to monkey 0
-  If false: throw to monkey 1";
 }
