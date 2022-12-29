@@ -6,11 +6,10 @@ mod parser;
 
 pub fn puzzle1(input: &str) -> u64 {
     let (_, mut col) = colony_parser(input).unwrap();
-    let m = col.get_meditation_number();
 
     for _ in 0..20 {
         for turn in 0..col.monkies.len() {
-            col.play_turn(turn, true, m); // don't care
+            col.play_turn(turn, None); // don't care
         }
     }
     return col
@@ -25,7 +24,7 @@ pub fn puzzle2(input: &str) -> u64 {
 
     for _ in 0..10_000 {
         for turn in 0..col.monkies.len() {
-            col.play_turn(turn, false, m); // we care X_X
+            col.play_turn(turn, Some(m)); // we care X_X
         }
     }
 

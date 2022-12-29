@@ -25,8 +25,8 @@ impl Colony {
         self.monkies.iter().map(|m| m.test.div).product::<u64>()
     }
 
-    pub fn play_turn(&mut self, idx: usize, dont_care: bool, med_number: u64) {
-        let item_worries: Vec<u64> = self.get_item_worries(idx, dont_care, med_number);
+    pub fn play_turn(&mut self, idx: usize, worry: Option<u64>) {
+        let item_worries: Vec<u64> = self.get_item_worries(idx, worry);
 
         let m_test: &Test = &self.monkies.get_mut(idx).unwrap().test;
 
@@ -63,12 +63,12 @@ impl Colony {
         inspections[0..n].to_owned()
     }
 
-    fn get_item_worries(&mut self, idx: usize, dc: bool, mn: u64) -> Vec<u64> {
+    fn get_item_worries(&mut self, idx: usize, worry: Option<u64>) -> Vec<u64> {
         let monkey: &mut Monkey = self.monkies.get_mut(idx).unwrap();
         let new_items: Vec<u64> = monkey
             .items
             .iter()
-            .map(|i| monkey.op.calculate_worry(*i, dc, mn))
+            .map(|i| monkey.op.calculate_worry(*i, worry))
             .collect();
 
         // clear the current monkey's items
