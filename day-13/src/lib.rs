@@ -1,52 +1,42 @@
-use std::cmp::Ordering;
-
+use packet::Packet;
 use parser::ppp;
 
 mod packet;
 mod parser;
 
 pub fn puzzle1(input: &str) -> usize {
-    let mut counter = 0;
+    let (_, packets) = ppp(input).unwrap();
 
-    for (idx, pp) in input.split("\n\n").enumerate() {
-        let (_, pair) = ppp(pp).unwrap();
-
-        let p1 = pair.0;
-        let p2 = pair.1;
-
-        // if p1.lt(&p2) {
-        //     counter = counter + idx + 1;
-        // }
-
-        match p1.partial_cmp(&p2) {
-            Some(ord) => match ord {
-                Ordering::Less => {
-                    println!(
-                        "Left is smaller -> {} + {} = {}",
-                        counter,
-                        idx + 1,
-                        counter + idx + 1
-                    );
-                    counter = counter + idx + 1;
-                }
-                Ordering::Equal => {
-                    println!("They are equal.");
-                }
-                Ordering::Greater => {
-                    println!("Left is greater.");
-                }
-            },
-            None => {
-                // failed to compare. check parser.rs
-                todo!()
+    packets
+        .iter()
+        .enumerate()
+        .filter_map(|(i, (left_p, right_p))| -> Option<usize> {
+            match left_p.cmp(right_p) {
+                std::cmp::Ordering::Less => Some(i + 1),
+                std::cmp::Ordering::Equal => todo!(),
+                std::cmp::Ordering::Greater => None,
             }
-        }
-    }
-    return counter;
+        })
+        .sum::<usize>()
 }
 
-pub fn puzzle2(input: &str) -> u64 {
-    return 0;
+pub fn puzzle2(input: &str) -> usize {
+    let (_, packets) = ppp(input).unwrap();
+
+    let dp2 = Packet::decode_packet(2);
+    let dp6 = Packet::decode_packet(6);
+
+    let mut sorted: Vec<&Packet> = packets
+        .iter()
+        .flat_map(|(p1, p2)| [p1, p2])
+        .chain([&dp2, &dp6])
+        .collect();
+    sorted.sort();
+
+    let dp2_loc: usize = sorted.iter().position(|&r| r == &dp2).unwrap() + 1;
+    let dp6_loc: usize = sorted.iter().position(|&r| r == &dp6).unwrap() + 1;
+
+    dp2_loc * dp6_loc
 }
 
 #[cfg(test)]
@@ -64,6 +54,6 @@ mod tests {
     #[test]
     fn test_puzzle2() {
         let result = puzzle2(INPUT);
-        assert_eq!(result, 29);
+        assert_eq!(result, 140);
     }
 }

@@ -2,42 +2,25 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{newline, u32},
-    multi::separated_list0,
-    sequence::tuple,
+    multi::{separated_list0, separated_list1},
+    sequence::{delimited, separated_pair},
     IResult, Parser,
 };
 
 use crate::packet::Packet;
 
 /// packet pair parser
-pub fn ppp(input: &str) -> IResult<&str, (Packet, Packet)> {
-    // println!("Starting ppp on {:?}", input);
-    let (input, v) = tuple((lpp, newline, lpp))(input)?;
-    Ok((input, (v.0, v.2)))
+pub fn ppp(input: &str) -> IResult<&str, Vec<(Packet, Packet)>> {
+    separated_list1(tag("\n\n"), separated_pair(lpp, newline, lpp))(input)
 }
 
 /// list packet parser
 fn lpp(input: &str) -> IResult<&str, Packet> {
-    // println!("[ Starting lpp on {:?} ", input);
-
-    let (input, _) = tag("[")(input)?;
-
-    let (input, sublist) = separated_list0(
-        tag(","),
-        alt((lpp, alt((u32.map(|v| Packet::Int(v)), lpp)))),
-    )(input)?;
-
-    // println!("  Finished lpp {:?}", &sublist);
-
-    // must find closing bracket of itself here
-    let (input, _) = tag("]")(input)?;
-
-    // println!(
-    //     "Closing list ] with {:?}",
-    //     Packet::List(sublist.clone()))
-    // );
-
-    Ok((input, Packet::List(sublist)))
+    alt((
+        delimited(tag("["), separated_list0(tag(","), lpp), tag("]"))
+            .map(|v: Vec<Packet>| Packet::List(v)),
+        u32.map(|i: u32| Packet::Int(i)),
+    ))(input)
 }
 
 #[cfg(test)]
@@ -51,7 +34,7 @@ mod tests {
             result,
             Ok((
                 "",
-                (
+                vec![(
                     (Packet::List(vec![
                         Packet::Int(1),
                         Packet::Int(1),
@@ -66,7 +49,7 @@ mod tests {
                         Packet::Int(1),
                         Packet::Int(1)
                     ])
-                )
+                )]
             ))
         );
     }
@@ -78,13 +61,13 @@ mod tests {
             result,
             Ok((
                 "",
-                (
+                vec![(
                     Packet::List(vec![
                         Packet::List(vec![Packet::Int(1)]),
                         Packet::List(vec![Packet::Int(2), Packet::Int(3), Packet::Int(4),])
                     ]),
                     Packet::List(vec![Packet::List(vec![Packet::Int(1)]), Packet::Int(4)]),
-                )
+                )]
             ))
         );
     }
@@ -97,10 +80,10 @@ mod tests {
             result,
             Ok((
                 "",
-                (
+                vec![(
                     Packet::List(vec![Packet::List(vec![Packet::List(vec![])])]), // 3 layers
                     Packet::List(vec![Packet::List(vec![])]),                     // 2 layers
-                )
+                )]
             ))
         );
     }
