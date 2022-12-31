@@ -1,3 +1,5 @@
+use std::cmp::Ordering::*;
+
 use packet::Packet;
 use parser::ppp;
 
@@ -12,9 +14,8 @@ pub fn puzzle1(input: &str) -> usize {
         .enumerate()
         .filter_map(|(i, (left_p, right_p))| -> Option<usize> {
             match left_p.cmp(right_p) {
-                std::cmp::Ordering::Less => Some(i + 1),
-                std::cmp::Ordering::Equal => todo!(),
-                std::cmp::Ordering::Greater => None,
+                Less => Some(i + 1),
+                Equal | Greater => None,
             }
         })
         .sum::<usize>()
