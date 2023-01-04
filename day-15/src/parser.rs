@@ -6,8 +6,22 @@ use nom::{
     IResult,
 };
 
-fn parser(input: &str) -> IResult<&str, Vec<((i32, i32), (i32, i32))>> {
-    separated_list1(newline, line_parser)(input)
+use crate::sensor::Sensor;
+
+pub fn sensor_parser(input: &str) -> IResult<&str, Vec<Sensor>> {
+    let (input, sb) = separated_list1(newline, line_parser)(input)?;
+
+    let sensors: Vec<Sensor> = sb
+        .into_iter()
+        .map(|(s, b)| ((s.0 as isize, s.1 as isize), (b.0 as isize, b.1 as isize)))
+        .map(|(s, b)| Sensor {
+            pos: s,
+            beacon: b,
+            dist: (s.0 - b.0).abs() + (s.1 - b.1).abs(),
+        })
+        .collect();
+
+    Ok((input, sensors))
 }
 
 fn line_parser(input: &str) -> IResult<&str, ((i32, i32), (i32, i32))> {
@@ -39,8 +53,22 @@ Sensor at x=9, y=16: closest beacon is at x=10, y=16";
     #[test]
     fn test_basic_parsing() {
         assert_eq!(
-            parser(INPUT),
-            Ok(("", vec![((2, 18), (-2, 15)), ((9, 16), (10, 16))]))
+            sensor_parser(INPUT),
+            Ok((
+                "",
+                vec![
+                    Sensor {
+                        pos: (2, 18),
+                        beacon: (-2, 15),
+                        dist: 7
+                    },
+                    Sensor {
+                        pos: (9, 16),
+                        beacon: (10, 16),
+                        dist: 1
+                    }
+                ]
+            ))
         );
     }
 }
