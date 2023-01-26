@@ -8,11 +8,7 @@ use nom::{
     IResult,
 };
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct Valve {
-    rate: u32,
-    child: Vec<String>,
-}
+use crate::valve::Valve;
 
 // Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
 fn flow_parser(input: &str) -> IResult<&str, HashMap<String, Valve>> {
@@ -34,15 +30,7 @@ fn flow_parser(input: &str) -> IResult<&str, HashMap<String, Valve>> {
 
     let map: HashMap<String, Valve> = valves
         .into_iter()
-        .map(|((name, rate), children)| {
-            (
-                name.to_string(),
-                Valve {
-                    rate,
-                    child: children.into_iter().map(String::from).collect(),
-                },
-            )
-        })
+        .map(|((name, rate), children)| (name.to_string(), Valve::new(rate, children)))
         .collect();
 
     Ok((input, map))
@@ -62,20 +50,8 @@ Valve BB has flow rate=13; tunnels lead to valves CC, AA";
             Ok((
                 "",
                 HashMap::from([
-                    (
-                        "AA".to_owned(),
-                        Valve {
-                            rate: 0,
-                            child: vec!["DD".to_owned(), "II".to_owned(), "BB".to_owned()]
-                        }
-                    ),
-                    (
-                        "BB".to_owned(),
-                        Valve {
-                            rate: 13,
-                            child: vec!["CC".to_owned(), "AA".to_owned()]
-                        }
-                    ),
+                    ("AA".to_owned(), Valve::new(0, vec!["DD", "II", "BB"])),
+                    ("BB".to_owned(), Valve::new(13, vec!["CC", "AA"])),
                 ])
             ))
         );

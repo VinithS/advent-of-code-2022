@@ -1,4 +1,5 @@
 mod parser;
+mod valve;
 
 pub fn puzzle1(_input: &str) -> usize {
     todo!()
